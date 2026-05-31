@@ -1,29 +1,20 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
-
-/** 0–1 arası; müzik seviyesi (ör. 0.2–0.35 arası daha yumuşak) */
-const MUSIC_VOLUME = 0.28;
+import { useRef, useCallback, useEffect, useState } from "react";
 import DeviceGate from "@/components/DeviceGate";
 import EnvelopeOpening from "@/components/EnvelopeOpening";
-import HeroSection from "@/components/HeroSection";
-import DetailsSection from "@/components/DetailsSection";
+import EngagementSection from "@/components/EngagementSection";
+
+const MUSIC_VOLUME = 0.28;
 
 export default function Home() {
-  const [envelopeOpen, setEnvelopeOpen] = useState(false);
-  const [muted, setMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [muted, setMuted] = useState(false);
+  const [scrollEnabled, setScrollEnabled] = useState(false);
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = MUSIC_VOLUME;
-  }, []);
-
-  // Sayfa yenilendiğinde browser scroll pozisyonunu hatırlamasın,
-  // her zaman tepeden başlasın ve zarf açılana kadar scroll kilitli kalsın
-  useEffect(() => {
-    if ("scrollRestoration" in history) {
-      history.scrollRestoration = "manual";
-    }
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     document.body.style.overflow = "hidden";
 
@@ -33,10 +24,9 @@ export default function Home() {
   }, []);
 
   const handleEnvelopeComplete = useCallback(() => {
-    // Önce tepeden başlat, sonra scroll kilidi kaldır
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     document.body.style.overflow = "";
-    setEnvelopeOpen(true);
+    setScrollEnabled(true);
   }, []);
 
   const handleTap = useCallback(() => {
@@ -56,20 +46,12 @@ export default function Home() {
     <DeviceGate>
       <audio ref={audioRef} src="/despacito.mp3" loop preload="auto" />
 
-      <main style={{ position: "relative", zIndex: 0 }}>
-        <HeroSection />
-        <DetailsSection />
+      <main>
+        <EnvelopeOpening onTap={handleTap} onComplete={handleEnvelopeComplete} />
+        <EngagementSection />
       </main>
 
-      {!envelopeOpen && (
-        <EnvelopeOpening
-          onTap={handleTap}
-          onComplete={handleEnvelopeComplete}
-        />
-      )}
-
-      {/* Mute / Unmute butonu */}
-      {envelopeOpen && (
+      {scrollEnabled && (
         <button
           onClick={toggleMute}
           aria-label={muted ? "Sesi aç" : "Sesi kapat"}
@@ -89,18 +71,15 @@ export default function Home() {
             alignItems: "center",
             justifyContent: "center",
             boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
-            transition: "opacity 0.2s",
           }}
         >
           {muted ? (
-            /* Ses kapalı ikonu */
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
               <line x1="23" y1="9" x2="17" y2="15" />
               <line x1="17" y1="9" x2="23" y2="15" />
             </svg>
           ) : (
-            /* Ses açık ikonu */
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
               <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />

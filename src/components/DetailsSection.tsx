@@ -7,14 +7,9 @@ import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/** public/Varlık 2.svg */
 const FLORAL_FLAT_SRC = "/Varl%C4%B1k%202.svg";
-
-/**
- * Google Drive klasör paylaşım linki buraya gelecek.
- * Drive'da klasörü oluştur → Paylaş → "Bağlantıya sahip herkes" → Düzenleyici → linki kopyala.
- */
-const PHOTO_UPLOAD_URL = "https://drive.google.com/drive/folders/1AL5aLg3dYgj8etISYmMq9UnpF7BsTyqC";
+const PHOTO_UPLOAD_URL =
+  "https://drive.google.com/drive/folders/1AL5aLg3dYgj8etISYmMq9UnpF7BsTyqC";
 
 function CountdownTimer({ targetDate }: { targetDate: Date }) {
   const [timeLeft, setTimeLeft] = useState({
@@ -26,50 +21,39 @@ function CountdownTimer({ targetDate }: { targetDate: Date }) {
 
   useEffect(() => {
     const tick = () => {
-      const now = new Date().getTime();
+      const now = Date.now();
       const diff = targetDate.getTime() - now;
-
       if (diff <= 0) {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
         return;
       }
-
       setTimeLeft({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / (1000 * 60)) % 60),
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff / 3600000) % 24),
+        minutes: Math.floor((diff / 60000) % 60),
         seconds: Math.floor((diff / 1000) % 60),
       });
     };
-
     tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
   }, [targetDate]);
 
-  const units = [
-    { value: timeLeft.days, label: "Gün" },
-    { value: timeLeft.hours, label: "Saat" },
-    { value: timeLeft.minutes, label: "Dakika" },
-    { value: timeLeft.seconds, label: "Saniye" },
-  ];
-
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        gap: "0.75rem",
-      }}
-    >
-      {units.map((unit) => (
+    <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
+      {[
+        { v: timeLeft.days, l: "Gün" },
+        { v: timeLeft.hours, l: "Saat" },
+        { v: timeLeft.minutes, l: "Dakika" },
+        { v: timeLeft.seconds, l: "Saniye" },
+      ].map(({ v, l }) => (
         <div
-          key={unit.label}
+          key={l}
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            minWidth: 60,
+            minWidth: 56,
           }}
         >
           <span
@@ -81,24 +65,48 @@ function CountdownTimer({ targetDate }: { targetDate: Date }) {
               lineHeight: 1,
             }}
           >
-            {String(unit.value).padStart(2, "0")}
+            {String(v).padStart(2, "0")}
           </span>
           <span
             style={{
-              fontSize: "0.65rem",
-              letterSpacing: "0.15em",
+              fontSize: "0.62rem",
+              letterSpacing: "0.16em",
               textTransform: "uppercase",
               color: "#8b6f5e",
               marginTop: "0.35rem",
             }}
           >
-            {unit.label}
+            {l}
           </span>
         </div>
       ))}
     </div>
   );
 }
+
+const Divider = () => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "0.75rem",
+      margin: "1.75rem auto",
+      width: "min(260px, 70vw)",
+    }}
+  >
+    <div style={{ flex: 1, height: 1, background: "#e8d5a8" }} />
+    <div
+      style={{
+        width: 6,
+        height: 6,
+        borderRadius: "50%",
+        background: "#c9a96e",
+        flexShrink: 0,
+      }}
+    />
+    <div style={{ flex: 1, height: 1, background: "#e8d5a8" }} />
+  </div>
+);
 
 export default function DetailsSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -108,46 +116,58 @@ export default function DetailsSection() {
     const ctx = gsap.context(() => {
       gsap.utils.toArray<HTMLElement>(".detail-block").forEach((el) => {
         gsap.from(el, {
-          y: 30,
+          y: 28,
           opacity: 0,
-          duration: 0.8,
+          duration: 0.9,
           ease: "power3.out",
           scrollTrigger: {
             trigger: el,
-            start: "top 85%",
+            start: "top 88%",
             toggleActions: "play none none none",
           },
         });
       });
     }, sectionRef);
-
     return () => ctx.revert();
   }, []);
-
-  const dividerStyle: React.CSSProperties = {
-    width: 40,
-    height: 1,
-    background: "#c9a96e",
-    margin: "2rem auto",
-  };
 
   return (
     <section
       ref={sectionRef}
       style={{
-
         background: "#faf7f2",
         textAlign: "center",
+        padding: "0 1.5rem",
+        // decorative top border
+        borderTop: "3px solid #e8d5a8",
       }}
     >
+      {/* Decorative floral top */}
+      <div
+        className="detail-block"
+        aria-hidden
+        style={{
+          margin: "2rem auto 0",
+          maxWidth: "min(100%, 300px)",
+          lineHeight: 0,
+        }}
+      >
+        <Image
+          src={FLORAL_FLAT_SRC}
+          alt=""
+          width={600}
+          height={180}
+          unoptimized
+          style={{ width: "100%", height: "auto", display: "block", objectFit: "contain" }}
+        />
+      </div>
 
-
-      {/* Düğün Bilgileri */}
-      <div className="detail-block" style={{ marginBottom: "1.5rem", paddingTop: "2rem" }}>
+      {/* Wedding Date */}
+      <div className="detail-block" style={{ marginTop: "1.5rem" }}>
         <p
           style={{
-            fontSize: "0.7rem",
-            letterSpacing: "0.2em",
+            fontSize: "0.68rem",
+            letterSpacing: "0.22em",
             textTransform: "uppercase",
             color: "#c9a96e",
             marginBottom: "0.75rem",
@@ -158,7 +178,7 @@ export default function DetailsSection() {
         <h2
           style={{
             fontFamily: "var(--font-serif-custom), Georgia, serif",
-            fontSize: "1.8rem",
+            fontSize: "1.9rem",
             fontWeight: 400,
             color: "#2c2420",
             marginBottom: "0.25rem",
@@ -166,30 +186,24 @@ export default function DetailsSection() {
         >
           6 Haziran 2026
         </h2>
-        <p
-          style={{
-            fontSize: "0.9rem",
-            color: "#8b6f5e",
-          }}
-        >
-          Cumartesi, Saat 19:00
+        <p style={{ fontSize: "0.88rem", color: "#8b6f5e" }}>
+          Cumartesi &nbsp;·&nbsp; Saat 19:00
         </p>
       </div>
 
-      {/* Geri Sayım */}
-      <div className="detail-block">
+      {/* Countdown */}
+      <div className="detail-block" style={{ marginTop: "1.25rem" }}>
         <CountdownTimer targetDate={weddingDate} />
       </div>
 
-      <div style={dividerStyle} />
+      <Divider />
 
-
-      {/* Kına Bilgileri */}
+      {/* Kına Gecesi */}
       <div className="detail-block">
         <p
           style={{
-            fontSize: "0.7rem",
-            letterSpacing: "0.2em",
+            fontSize: "0.68rem",
+            letterSpacing: "0.22em",
             textTransform: "uppercase",
             color: "#c9a96e",
             marginBottom: "0.75rem",
@@ -200,7 +214,7 @@ export default function DetailsSection() {
         <h3
           style={{
             fontFamily: "var(--font-serif-custom), Georgia, serif",
-            fontSize: "1.3rem",
+            fontSize: "1.35rem",
             fontWeight: 400,
             color: "#2c2420",
             marginBottom: "0.25rem",
@@ -208,96 +222,65 @@ export default function DetailsSection() {
         >
           3 Haziran 2026
         </h3>
+        <p style={{ fontSize: "0.88rem", color: "#8b6f5e", marginBottom: "0.5rem" }}>
+          Çarşamba &nbsp;·&nbsp; Saat 19:00
+        </p>
         <p
           style={{
-            fontSize: "0.9rem",
-            color: "#8b6f5e",
-          }}
-        >
-          Çarşamba, Saat 19:00
-        </p>
-          <p
-          style={{
-            fontSize: "0.85rem",
-            color: "#8b6f5e",
-            marginTop: "0.5rem",
-            fontWeight: 600
+            fontSize: "0.88rem",
+            color: "#6b4c3b",
+            fontWeight: 600,
+            marginBottom: "0.35rem",
           }}
         >
           Bulut 3 VIP Düğün Salonu
         </p>
-        <p
-          style={{
-            
-            fontSize: "0.85rem",
-            color: "#8b6f5e",
-            marginTop: "0.5rem",
-          }}
-        >
-          Merkez Mah. Emirgan Cad. No:5,<br /> İmar Blokları, Alibeyköy, 34060 Eyüpsultan
+        <p style={{ fontSize: "0.82rem", color: "#8b6f5e", lineHeight: 1.6 }}>
+          Merkez Mah. Emirgan Cad. No:5,
+          <br />
+          İmar Blokları, Alibeyköy, 34060 Eyüpsultan
         </p>
       </div>
 
-      <div style={dividerStyle} />
-      <div style={{ paddingBottom: "5rem" }}>
-      </div>
+      <Divider />
 
-      {/* Davet Yazısı */}
+      {/* Invite message */}
       <div className="detail-block">
         <h2
           style={{
             fontFamily: "var(--font-serif-custom), Georgia, serif",
-            fontSize: "2.5rem",
+            fontSize: "2.2rem",
             fontWeight: 400,
             color: "#2c2420",
-            lineHeight: 1.4,
-            marginBottom: "0.5rem",
+            lineHeight: 1.45,
+            marginBottom: "0.6rem",
           }}
         >
-          Düğünümüze<br />Bekleriz
+          Düğünümüze
+          <br />
+          Bekleriz
         </h2>
-
         <p
           style={{
-            fontSize: "1rem",
+            fontSize: "0.92rem",
             color: "#8b6f5e",
-            lineHeight: 1.6,
+            lineHeight: 1.7,
+            maxWidth: 280,
+            margin: "0 auto",
           }}
         >
           Bu mutlu günümüzde sizleri de aramızda görmekten mutluluk duyarız.
         </p>
-        <div
-          aria-hidden
-          style={{
-            margin: "1rem auto 1.25rem",
-            maxWidth: "min(100%, 320px)",
-            lineHeight: 0,
-          }}
-        >
-          <Image
-            src={FLORAL_FLAT_SRC}
-            alt=""
-            width={640}
-            height={200}
-            unoptimized
-            style={{
-              width: "100%",
-              height: "auto",
-              display: "block",
-              objectFit: "contain",
-            }}
-          />
-        </div>
       </div>
 
-      <div style={dividerStyle} />
+      <Divider />
 
-      {/* Fotoğraf Yükleme */}
-      <div className="detail-block" style={{ padding: "0 1.5rem 0" }}>
+      {/* Photo Upload */}
+      <div className="detail-block" style={{ paddingBottom: "1rem" }}>
         <p
           style={{
-            fontSize: "0.7rem",
-            letterSpacing: "0.2em",
+            fontSize: "0.68rem",
+            letterSpacing: "0.22em",
             textTransform: "uppercase",
             color: "#c9a96e",
             marginBottom: "0.75rem",
@@ -308,7 +291,7 @@ export default function DetailsSection() {
         <h3
           style={{
             fontFamily: "var(--font-serif-custom), Georgia, serif",
-            fontSize: "1.4rem",
+            fontSize: "1.35rem",
             fontWeight: 400,
             color: "#2c2420",
             marginBottom: "0.5rem",
@@ -318,16 +301,18 @@ export default function DetailsSection() {
         </h3>
         <p
           style={{
-            fontSize: "0.9rem",
+            fontSize: "0.88rem",
             color: "#8b6f5e",
             lineHeight: 1.6,
             marginBottom: "1.25rem",
+            maxWidth: 280,
+            margin: "0 auto 1.25rem",
           }}
         >
-          Çektiğiniz fotoğrafları aşağıdaki QR kodu okutarak ya da linke tıklayarak paylaşabilirsiniz.
+          Çektiğiniz fotoğrafları QR kodu okutarak ya da linke tıklayarak
+          paylaşabilirsiniz.
         </p>
 
-        {/* QR Kod */}
         <div
           style={{
             display: "inline-block",
@@ -349,59 +334,35 @@ export default function DetailsSection() {
           />
         </div>
 
-        {/* Tıklanabilir Link */}
         <div>
           <a
             href={PHOTO_UPLOAD_URL}
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.4rem",
-              fontSize: "0.9rem",
+              fontSize: "0.88rem",
               color: "#c9a96e",
               textDecoration: "none",
               borderBottom: "1px solid #c9a96e",
               paddingBottom: "0.1rem",
-              fontWeight: 500,
             }}
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="17 8 12 3 7 8" />
-              <line x1="12" y1="3" x2="12" y2="15" />
-            </svg>
             Fotoğrafları yüklemek için tıklayın
           </a>
         </div>
       </div>
 
-      <div style={dividerStyle} />
-    
-   
+      <Divider />
 
       {/* Google Maps */}
-      <div className="detail-block" style={{ padding: "1rem 1.5rem 1rem" }}>
+      <div className="detail-block" style={{ paddingBottom: "1rem" }}>
         <p
           style={{
-            fontSize: "0.7rem",
-            letterSpacing: "0.2em",
+            fontSize: "0.68rem",
+            letterSpacing: "0.22em",
             textTransform: "uppercase",
             color: "#c9a96e",
             marginBottom: "1rem",
-
           }}
         >
           Düğün Mekanı
@@ -426,20 +387,17 @@ export default function DetailsSection() {
         </div>
         <p
           style={{
-            fontSize: "0.8rem",
+            fontSize: "0.78rem",
             color: "#8b6f5e",
             marginTop: "0.75rem",
+            lineHeight: 1.5,
           }}
         >
           Merkez Mah. Emirgan Cad. No:5, İmar Blokları, Alibeyköy, 34060 Eyüpsultan
         </p>
       </div>
 
-
-
-      {/* Alt boşluk */}
       <div style={{ height: "5rem" }} />
-      <div style={{ paddingBottom: "5rem" }} />
     </section>
   );
 }

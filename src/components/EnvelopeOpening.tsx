@@ -1,160 +1,204 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import Image from "next/image";
 
-interface EnvelopeOpeningProps {
+interface Props {
   onComplete: () => void;
   onTap?: () => void;
 }
 
-export default function EnvelopeOpening({ onComplete, onTap }: EnvelopeOpeningProps) {
-  const topFlapRef = useRef<HTMLDivElement>(null);
-  const bottomFlapRef = useRef<HTMLDivElement>(null);
-  const [opened, setOpened] = useState(false);
+export default function EnvelopeOpening({ onComplete, onTap }: Props) {
+  const [phase, setPhase] = useState<"idle" | "animating" | "done">("idle");
+  const closedRef = useRef<HTMLDivElement>(null);
+  const openRef = useRef<HTMLDivElement>(null);
+  const paperRef = useRef<HTMLDivElement>(null);
+  const hintRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (paperRef.current) {
+      // GSAP handles centering + initial offset — avoids CSS transform conflict
+      gsap.set(paperRef.current, { xPercent: -50, yPercent: -50, y: 110, opacity: 0 });
+    }
+  }, []);
 
   const handleOpen = () => {
-    if (opened) return;
-    setOpened(true);
+    if (phase !== "idle") return;
+    setPhase("animating");
     onTap?.();
 
-    const tl = gsap.timeline({ delay: 0.22, onComplete });
+    const tl = gsap.timeline({
+      onComplete: () => {
+        setPhase("done");
+        onComplete();
+      },
+    });
 
-    tl.addLabel("open", 0)
+    tl.to(hintRef.current, { opacity: 0, duration: 0.25 }, 0)
+
+      // Envelope opens
+      .to(closedRef.current, { opacity: 0, duration: 0.7, ease: "power1.inOut" }, 0.1)
+      .to(openRef.current,  { opacity: 1, duration: 0.7, ease: "power1.inOut" }, 0.1)
+
+      // Paper eases out naturally — starts from inside envelope, decelerates as it clears the top
       .to(
-        topFlapRef.current,
+        paperRef.current,
         {
-          rotateX: -50,
-          y: -500,
+          y: -95,
           opacity: 1,
-          duration: 3,
-          ease: "power3.inOut",
+          duration: 2.0,
+          ease: "power2.out",
         },
-        "open"
-      )
-      .to(
-        bottomFlapRef.current,
-        {
-          y: 500,
-          duration: 3,
-          ease: "power3.inOut",
-        },
-        "open"
+        0.6
       );
   };
 
   return (
-    <div
-      onClick={handleOpen}
+    <section
       style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 100,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "transparent",
-        cursor: "pointer",
-        pointerEvents: "auto",
+        position: "relative",
+        width: "100%",
+        height: "100dvh",
+        overflow: "hidden",
+        cursor: phase === "idle" ? "pointer" : "default",
+        userSelect: "none",
+        WebkitUserSelect: "none",
       }}
+      onClick={handleOpen}
     >
+      {/* Background */}
+      <Image
+        src="/envelope-bg.jpg"
+        alt=""
+        fill
+        style={{ objectFit: "cover", objectPosition: "center" }}
+        priority
+      />
+
+      {/* Warm overlay */}
       <div
         style={{
-          position: "relative",
-          width: "100%",
-          height: "100dvh",
-          perspective: "1200px",
-          perspectiveOrigin: "50% 45%",
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(180deg, rgba(250,235,205,0.28) 0%, rgba(250,220,170,0.18) 100%)",
+          zIndex: 1,
+        }}
+      />
+
+      {/* Envelope + paper container */}
+      <div
+        style={{
+          position: "absolute",
+
+          inset: 0,
+          zIndex: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {/* Alt kapak — alttaki site (main) şeffaf alanlardan görünür; ekstra arka plan yok */}
+        {/* Paper — slides up from envelope opening */}
         <div
-          ref={bottomFlapRef}
+          ref={paperRef}
           style={{
             position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            width: "100%",
-            height: "100%",
-            zIndex: 1,
-            transformOrigin: "center top",
+            width: "min(88vw, 360px)",
+            zIndex: 10,
+            // positioned so it appears to come out of envelope center
+            top: "50%",
+            left: "50%",
+            pointerEvents: "none",
           }}
         >
           <Image
-            src="/envelope-bottom.png"
-            alt="Zarf alt kapak"
-            fill
-            style={{ objectFit: "cover", objectPosition: "top" }}
-            priority
+            src="/invitation-paper.png"
+            alt="Davetiye"
+            width={600}
+            height={850}
+            style={{ width: "100%", height: "auto", display: "block" }}
           />
         </div>
 
-        {/* Üst kapak — en üstte */}
+        {/* Open envelope — behind paper */}
         <div
-          ref={topFlapRef}
+          ref={openRef}
           style={{
             position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            width: "100%",
-            height: "100%",
-            zIndex: 2,
-            transformOrigin: "center bottom",
-            filter: "drop-shadow(-10px 5px 24px rgba(0, 0, 0, 0.34))",
-            transformStyle: "preserve-3d",
-            backfaceVisibility: "hidden",
+            width: "min(200vw, 600px)",
+            aspectRatio: "7 / 5",
+            opacity: 0,
+            zIndex: 4,
+            pointerEvents: "none",
           }}
         >
           <Image
-            src="/envelope-top.png"
-            alt="Zarf üst kapak (mühürlü)"
+            src="/envelope-open.png"
+            alt="Açık zarf"
             fill
-            style={{ objectFit: "cover", objectPosition: "bottom" }}
-            priority
+            style={{ objectFit: "contain" }}
           />
         </div>
 
-        {!opened && (
-          <div
-            style={{
-              position: "absolute",
-              bottom: "12%",
-              left: 0,
-              right: 0,
-              zIndex: 3,
-              textAlign: "center",
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "var(--font-serif-custom), Georgia, serif",
-                fontSize: "0.85rem",
-                color: "#c9a96e",
-                letterSpacing: "0.1em",
-                animation: "pulse 2s ease-in-out infinite",
-              }}
-            >
-              Açmak için dokunun
-            </p>
-          </div>
-        )}
+        {/* Closed envelope — on top initially */}
+        <div
+          ref={closedRef}
+          style={{
+            position: "absolute",
+            width: "min(200vw, 600px)",
+            aspectRatio: "7 / 5",
+            zIndex: 5,
+            pointerEvents: "none",
+          }}
+        >
+          <Image
+            src="/envelope-closed.png"
+            alt="Zarf"
+            fill
+            style={{ objectFit: "contain" }}
+            priority
+          />
+        </div>
+      </div>
+
+      {/* Tap hint */}
+      <div
+        ref={hintRef}
+        style={{
+          position: "absolute",
+          bottom: "14%",
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          textAlign: "center",
+          pointerEvents: "none",
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "var(--font-serif-custom), Georgia, serif",
+            fontSize: "0.82rem",
+            color: "#c9a96e",
+            letterSpacing: "0.14em",
+            animation: "envelopePulse 2s ease-in-out infinite",
+          }}
+        >
+          Açmak için dokunun
+        </p>
       </div>
 
       <style jsx>{`
-        @keyframes pulse {
+        @keyframes envelopePulse {
           0%,
           100% {
-            opacity: 0.5;
+            opacity: 0.45;
           }
           50% {
             opacity: 1;
           }
         }
       `}</style>
-    </div>
+    </section>
   );
 }

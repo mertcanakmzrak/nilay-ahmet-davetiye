@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans-custom);
+  --font-serif: var(--font-serif-custom);
+}
+
+:root {
+  --background: #faf7f2;
+  --foreground: #2c2420;
+  --gold: #c9a96e;
+  --gold-light: #e8d5a8;
+  --cream: #faf7f2;
+  --brown: #6b4c3b;
+  --brown-light: #8b6f5e;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+html {
+  scrollbar-width: none;
+}

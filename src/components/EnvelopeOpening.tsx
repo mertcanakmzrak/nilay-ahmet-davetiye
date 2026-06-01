@@ -15,6 +15,7 @@ export default function EnvelopeOpening({ onComplete, onTap }: Props) {
   const openRef = useRef<HTMLDivElement>(null);
   const paperRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
+  const namesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (paperRef.current) {
@@ -35,7 +36,7 @@ export default function EnvelopeOpening({ onComplete, onTap }: Props) {
       },
     });
 
-    tl.to(hintRef.current, { opacity: 0, duration: 0.25 }, 0)
+    tl.to([hintRef.current, namesRef.current], { opacity: 0, duration: 0.25 }, 0)
 
       // Envelope opens
       .to(closedRef.current, { opacity: 0, duration: 0.7, ease: "power1.inOut" }, 0.1)
@@ -162,12 +163,40 @@ export default function EnvelopeOpening({ onComplete, onTap }: Props) {
         </div>
       </div>
 
+      {/* Çift isim — zarfın üstünde */}
+      <div
+        ref={namesRef}
+        style={{
+          position: "absolute",
+          top: "14%",
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          textAlign: "center",
+          pointerEvents: "none",
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "var(--font-serif-custom), Georgia, serif",
+            fontSize: "clamp(2rem, 9vw, 2.8rem)",
+            fontWeight: 400,
+            color: "#fff",
+            letterSpacing: "0.04em",
+            textShadow: "0 2px 12px rgba(0,0,0,0.35)",
+            lineHeight: 1.3,
+          }}
+        >
+          Nilay &amp; Ahmet
+        </p>
+      </div>
+
       {/* Tap hint */}
       <div
         ref={hintRef}
         style={{
           position: "absolute",
-          bottom: "14%",
+          bottom: "13%",
           left: 0,
           right: 0,
           zIndex: 10,
@@ -179,12 +208,13 @@ export default function EnvelopeOpening({ onComplete, onTap }: Props) {
           style={{
             fontFamily: "var(--font-serif-custom), Georgia, serif",
             fontSize: "0.82rem",
-            color: "#c9a96e",
+            color: "#fff",
             letterSpacing: "0.14em",
+            textShadow: "0 1px 6px rgba(0,0,0,0.3)",
             animation: "envelopePulse 2s ease-in-out infinite",
           }}
         >
-          Açmak için dokunun
+          Açmak için tıklayın
         </p>
       </div>
 

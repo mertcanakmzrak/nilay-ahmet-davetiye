@@ -6,10 +6,9 @@ import Image from "next/image";
 
 interface Props {
   onComplete: () => void;
-  onTap?: () => void;
 }
 
-export default function EnvelopeOpening({ onComplete, onTap }: Props) {
+export default function EnvelopeOpening({ onComplete }: Props) {
   const [phase, setPhase] = useState<"idle" | "animating" | "done">("idle");
   const closedRef = useRef<HTMLDivElement>(null);
   const openRef = useRef<HTMLDivElement>(null);
@@ -27,7 +26,7 @@ export default function EnvelopeOpening({ onComplete, onTap }: Props) {
   const handleOpen = () => {
     if (phase !== "idle") return;
     setPhase("animating");
-    onTap?.();
+
 
     const tl = gsap.timeline({
       onComplete: () => {
@@ -127,7 +126,7 @@ export default function EnvelopeOpening({ onComplete, onTap }: Props) {
           ref={openRef}
           style={{
             position: "absolute",
-            width: "min(200vw, 600px)",
+            width: "min(200vw, 780px)",
             aspectRatio: "7 / 5",
             opacity: 0,
             zIndex: 4,
@@ -147,7 +146,7 @@ export default function EnvelopeOpening({ onComplete, onTap }: Props) {
           ref={closedRef}
           style={{
             position: "absolute",
-            width: "min(200vw, 600px)",
+            width: "min(200vw, 780px)",
             aspectRatio: "7 / 5",
             zIndex: 5,
             pointerEvents: "none",
